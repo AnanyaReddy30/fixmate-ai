@@ -1,0 +1,99 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.app {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+}
+
+.tagline {
+  text-align: center;
+  color: #94a3b8;
+  margin-bottom: 20px;
+}
+
+.top-bar {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+textarea {
+  width: 100%;
+  height: 140px;
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+}
+
+.analyze-btn {
+  margin-top: 10px;
+  padding: 12px 20px;
+  background: #22c55e;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.output {
+  margin-top: 20px;
+}
+
+.card {
+  background: #1e293b;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.code {
+  background: #020617;
+}
+
+.code pre {
+  overflow-x: auto;
+}
+
+.line {
+  color: #64748b;
+  margin-right: 10px;
+}
+
+.levels {
+  display: flex;
+  gap: 10px;
+}
+
+.level {
+  flex: 1;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.green { background: #065f46; }
+.yellow { background: #854d0e; }
+.red { background: #7f1d1d; }
+
+.loader {
+  border: 4px solid #1e293b;
+  border-top: 4px solid #22c55e;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  margin: 15px auto;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
