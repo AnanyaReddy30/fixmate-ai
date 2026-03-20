@@ -1,72 +1,74 @@
 import OpenAI from "openai";
-import dotenv from "dotenv";
-dotenv.config();
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-// 👉 your existing rule-based function (keep it)
-function ruleEngine(input, rawInput) {
-  // ...your existing conditions...
-  // return null if no strong match
-  return null;
-}
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export const analyzeError = async (input) => {
-  const rawInput = input;
-  const lower = input.toLowerCase();
-
-  // 1. Try rules first (fast + cheap)
-  const ruleResult = ruleEngine(lower, rawInput);
-  if (ruleResult) return ruleResult;
-
-  // 2. Fallback to AI (smart)
   try {
-    const prompt = `
-You are FixMate AI.
+    const response = await client.responses.create({
+      model: "gpt-4o-mini",
+      input: `
+Return ONLY valid JSON. No explanation outside JSON.
 
 Analyze this code/error:
-${rawInput}
+${input}
 
-Return STRICT JSON:
+Return in this format:
+
 {
- "explanation": "...",
- "cause": "...",
- "fix": "...",
- "correctedCode": "...",
- "tips": "...",
- "confidence": number,
- "learning": {
-   "basic": "...",
-   "intermediate": "...",
-   "advanced": "..."
- }
+  "explanation": "",
+  "cause": "",
+  "fix": "",
+  "correctedCode": "",
+  "tips": "",
+  "confidence": 0,
+  "learning": {
+    "basic": "",
+    "intermediate": "",
+    "advanced": ""
+  }
 }
-`;
-
-    const res = await client.responses.create({
-      model: "gpt-4o-mini",
-      input: prompt
+      `,
     });
 
-    const text = res.output[0].content[0].text;
+    const text = response.output[0].content[0].text;
 
-    // safe parse
-    const parsed = JSON.parse(text);
+    // 🧠 SAFE PARSE
+    try {
+      return JSON.parse(text);
+    } catch (err) {
+      console.log("JSON parse failed, raw output:", text);
 
-    return parsed;
+      return {
+        explanation: "AI returned non-JSON response.",
+        cause: "Model formatting issue.",
+        fix: "Improve prompt or parsing.",
+        correctedCode: text,
+        tips: "Check logs for raw output.",
+        confidence: 60,
+        learning: {
+          basic: "Ensure correct format",
+          intermediate: "Use structured prompts",
+          advanced: "Use JSON schema validation"
+        }
+      };
+    }
 
-  } catch (e) {
+  } catch (error) {
+    console.log("OPENAI ERROR:", error.message);
+
     return {
-      explanation: "AI fallback failed.",
-      cause: "Parsing or API issue.",
-      fix: "Check API key or response format.",
-      correctedCode: rawInput,
-      tips: "Retry with valid input.",
-      confidence: 50,
+      explanation: "AI request failed.",
+      cause: error.message,
+      fix: "Check API key or quota.",
+      correctedCode: "",
+      tips: "Verify environment variables.",
+      confidence: 30,
       learning: {
-        basic: "Check input format.",
-        intermediate: "Validate API response.",
-        advanced: "Handle JSON parsing safely."
+        basic: "Check API",
+        intermediate: "Handle errors",
+        advanced: "Implement retries"
       }
     };
   }
