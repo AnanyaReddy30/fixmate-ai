@@ -1,126 +1,123 @@
 import { useState } from "react";
 import axios from "axios";
-import "./App.css";
 
-function App() {
+export default function App() {
   const [input, setInput] = useState("");
-  const [response, setResponse] = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const analyze = async () => {
-    if (!input) return;
+  const handleAnalyze = async () => {
+    if (!input.trim()) return;
 
     setLoading(true);
-
     try {
-      const res = await axios.post("http://localhost:5005/api/debug", {
-        input,
-      });
-
-      setResponse(res.data);
+      const res = await axios.post(
+        "https://fixmate-ai.onrender.com/api/debug",
+        { input }
+      );
+      setData(res.data);
     } catch (err) {
+      console.log(err);
       alert("Error connecting to server");
     }
-
     setLoading(false);
   };
 
-  const demoInput = () => {
-    setInput(`let users;
-
-async function load() {
-  const res = await fetch("/api");
-  const data = await res.json();
-  users = data.users;
-}
-
-console.log(users.map(user => user.name));`);
-  };
-
   return (
-    <div className="app">
-
-      <h1>⚡ FixMate AI</h1>
-      <p className="tagline">
-        Your AI partner for debugging, explaining, and fixing code intelligently
-      </p>
-
-      <div className="top-bar">
-        <button onClick={demoInput}>Try Demo</button>
-      </div>
+    <div style={styles.container}>
+      <h1 style={styles.title}>🚀 FixMate AI</h1>
 
       <textarea
-        placeholder="Paste your error or code here..."
+        style={styles.textarea}
+        placeholder="Paste your error or code..."
         value={input}
         onChange={(e) => setInput(e.target.value)}
       />
 
-      <button className="analyze-btn" onClick={analyze}>
+      <button style={styles.button} onClick={handleAnalyze}>
         {loading ? "Analyzing..." : "Analyze"}
       </button>
 
-      {loading && <div className="loader"></div>}
+      {data && (
+        <div style={styles.output}>
+          <Card title="🔍 Explanation" text={data.explanation} />
+          <Card title="⚠️ Root Cause" text={data.cause} />
+          <Card title="🛠 Fix" text={data.fix} />
 
-      {response && (
-        <div className="output">
+          <Card
+            title="💻 Corrected Code"
+            text={data.correctedCode}
+            code
+          />
 
-          <div className="card">
-            <h3>🔍 Explanation</h3>
-            <p>{response.explanation}</p>
+          <Card title="💡 Tips" text={data.tips} />
+
+          <div style={styles.confidence}>
+            Confidence: {data.confidence}%
           </div>
 
-          <div className="card">
-            <h3>⚠️ Root Cause</h3>
-            <p>{response.cause}</p>
+          <div style={styles.learning}>
+            <p><b>🟢 Basic:</b> {data.learning?.basic}</p>
+            <p><b>🟡 Intermediate:</b> {data.learning?.intermediate}</p>
+            <p><b>🔴 Advanced:</b> {data.learning?.advanced}</p>
           </div>
-
-          <div className="card">
-            <h3>🛠 Fix</h3>
-            <p>{response.fix}</p>
-          </div>
-
-          <div className="card code">
-            <h3>💻 Corrected Code</h3>
-            <pre>
-              {response.correctedCode?.split("\n").map((line, i) => (
-                <div key={i}>
-                  <span className="line">{i + 1}</span> {line}
-                </div>
-              ))}
-            </pre>
-          </div>
-
-          <div className="card">
-            <h3>💡 Tips</h3>
-            <p>{response.tips}</p>
-          </div>
-
-          <div className="card">
-            <h3>📊 Confidence</h3>
-            <p>{response.confidence}%</p>
-          </div>
-
-          <div className="levels">
-            <div className="level green">
-              <h4>🟢 Basic</h4>
-              <p>{response.learning?.basic}</p>
-            </div>
-
-            <div className="level yellow">
-              <h4>🟡 Intermediate</h4>
-              <p>{response.learning?.intermediate}</p>
-            </div>
-
-            <div className="level red">
-              <h4>🔴 Advanced</h4>
-              <p>{response.learning?.advanced}</p>
-            </div>
-          </div>
-
         </div>
       )}
     </div>
   );
 }
 
-export default App;
+function Card({ title, text, code }) {
+  return (
+    <div style={styles.card}>
+      <h3>{title}</h3>
+      {code ? <pre>{text}</pre> : <p>{text}</p>}
+    </div>
+  );
+}
+
+const styles = {
+  container: {
+    padding: "30px",
+    fontFamily: "sans-serif",
+    background: "#0f172a",
+    color: "white",
+    minHeight: "100vh",
+  },
+  title: {
+    textAlign: "center",
+  },
+  textarea: {
+    width: "100%",
+    height: "150px",
+    marginTop: "20px",
+    padding: "10px",
+    borderRadius: "10px",
+    border: "none",
+  },
+  button: {
+    marginTop: "15px",
+    padding: "10px 20px",
+    borderRadius: "10px",
+    background: "#3b82f6",
+    color: "white",
+    border: "none",
+    cursor: "pointer",
+  },
+  output: {
+    marginTop: "30px",
+  },
+  card: {
+    background: "#1e293b",
+    padding: "15px",
+    borderRadius: "12px",
+    marginBottom: "15px",
+  },
+  confidence: {
+    marginTop: "10px",
+    fontWeight: "bold",
+  },
+  learning: {
+    marginTop: "10px",
+  },
+};
